@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tableau de bord</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Bienvenue, {{ email or username }} !</h1>
+        <form action="{{ url_for('logout') }}" method="get" style="display:inline;">
+            <button type="submit">Déconnexion</button>
+        </form>
+    </header>
+
+    <main>
+        <section>
+            <h2>Ajouter un fichier</h2>
+            <form action="{{ url_for('dashboard') }}" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="submit">Téléverser</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Mes fichiers</h2>
+            {% if files %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom du fichier</th>
+                        <th>Date d'ajout</th>
+                        <th>Télécharger</th>
+                        <th>Supprimer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in files %}
+                    <tr>
+                        <td>{{ file.filename }}</td>
+                        <td>{{ file.upload_date }}</td>
+                        <td>
+                            <a href="{{ url_for('download', file_id=file.id) }}">Télécharger</a>
+                        </td>
+                        <td>
+                            <form action="{{ url_for('delete', file_id=file.id) }}" method="post" style="display:inline;">
+                                <button type="submit" onclick="return confirm('Supprimer ce fichier ?');">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Vous n'avez pas encore de fichiers.</p>
+            {% endif %}
+        </section>
+
+        <div id="dashboard-message">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

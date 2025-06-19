@@ -1,0 +1,114 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(120deg, #e0e7ff 0%, #f4f4f4 100%);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+h1, h2 {
+    color: #2d3a4a;
+    text-align: center;
+    margin-top: 30px;
+}
+
+form {
+    background: #fff;
+    padding: 32px 24px;
+    margin: 40px auto 24px auto;
+    width: 100%;
+    max-width: 350px;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(60, 72, 88, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+input[type="text"], input[type="email"], input[type="password"], input[type="file"] {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #f8fafc;
+    transition: border 0.2s;
+}
+input:focus {
+    border: 1.5px solid #6366f1;
+    outline: none;
+}
+
+button {
+    background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+    transition: background 0.2s, transform 0.1s;
+}
+button:hover {
+    background: linear-gradient(90deg, #4f46e5 0%, #2563eb 100%);
+    transform: translateY(-2px) scale(1.03);
+}
+
+#app, #uploadResult {
+    max-width: 600px;
+    margin: 0 auto;
+    margin-bottom: 32px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background: #fff;
+    margin-bottom: 14px;
+    padding: 18px 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(60, 72, 88, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 1rem;
+}
+li small {
+    color: #64748b;
+    margin-left: 8px;
+}
+li button {
+    margin-left: 8px;
+    padding: 7px 14px;
+    font-size: 0.95rem;
+    border-radius: 5px;
+}
+
+#uploadForm {
+    max-width: 400px;
+    margin-bottom: 16px;
+}
+
+#uploadResult {
+    text-align: center;
+    font-weight: 500;
+    color: #2563eb;
+    min-height: 24px;
+}
+
+@media (max-width: 600px) {
+    form, #app, #uploadForm {
+        max-width: 98vw;
+        padding: 12px;
+    }
+    li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+} 

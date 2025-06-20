@@ -11,12 +11,14 @@
 <body>
     <header>
         <nav>
-            <div class="logo">
-                <img src="/static/assets/logo.png" alt="Notre Logo">
-            </div>
             <div class="nav-buttons">
-                <a href="/templates/login.html" class="btn btn-login">Connexion</a>
-                <a href="/templates/register.html" class="btn btn-register">S'inscrire</a>
+                <a href="{{ url_for('login') }}" class="btn btn-login">Connexion</a>
+                <a href="{{ url_for('register') }}" class="btn btn-register">S'inscrire</a>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Commencer</a>
+                <a href="#features" class="btn btn-secondary">En savoir plus</a>
             </div>
         </nav>
     </header>

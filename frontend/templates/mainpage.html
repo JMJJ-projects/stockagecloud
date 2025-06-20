@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Notre Plateforme</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-login">Connexion</a>
+                <a href="{{ url_for('register') }}" class="btn btn-register">S'inscrire</a>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Commencer</a>
+                <a href="#features" class="btn btn-secondary">En savoir plus</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Bienvenue sur Notre Plateforme</h1>
+            <p>Une solution moderne pour gérer vos fichiers en toute simplicité</p>
+            <div class="cta-buttons">
+                <a href="/templates/register.html" class="btn btn-primary">Commencer</a>
+                <a href="#features" class="btn btn-secondary">En savoir plus</a>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <h2>Nos Fonctionnalités</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Stockage Cloud</h3>
+                    <p>Accédez à vos fichiers partout, tout le temps</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-share-alt"></i>
+                    <h3>Partage Facile</h3>
+                    <p>Partagez vos documents en quelques clics</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-lock"></i>
+                    <h3>Sécurité Maximale</h3>
+                    <p>Vos données sont protégées et sécurisées</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Notre Plateforme. Tous droits réservés.</p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html> 

@@ -66,22 +66,141 @@ input:focus {
     transform: translateY(-2px) scale(1.03);
 }
 
-.btn-login {
-    color: #1a73e8;
-    border: 1px solid #1a73e8;
-    background: none;
-}
-.btn-login:hover {
+.btn-login, .btn-register {
+    
     background-color: #1a73e8;
     color: white;
+}
+.btn-login:hover, .btn-register:hover {
+    background-color: #1557b0;
 }
 
-.btn-register {
-    background-color: #1a73e8;
-    color: white;
+/* Authentication Pages */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
 }
-.btn-register:hover {
-    background-color: #1557b0;
+
+.auth-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #e1e5e9;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+    color: #1a73e8;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+}
+
+.auth-header p {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+/* Auth Messages */
+.auth-messages {
+    margin-bottom: 1.5rem;
+}
+
+.auth-messages .message {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideIn 0.3s ease;
+}
+
+.auth-messages .message-info {
+    background: #e3f2fd;
+    color: #1976d2;
+    border-left: 4px solid #1976d2;
+}
+
+.auth-messages .message-success {
+    background: #e8f5e8;
+    color: #2e7d32;
+    border-left: 4px solid #2e7d32;
+}
+
+.auth-messages .message-error {
+    background: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #c62828;
+}
+
+.auth-form {
+    margin: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    max-width: none;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+.auth-form .btn {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.auth-footer p {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.btn-link {
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.btn-link:hover {
+    color: #1557b0;
+    text-decoration: underline;
 }
 
 #app, #uploadResult {
@@ -702,6 +821,11 @@ footer {
         left: 20px;
         right: 20px;
         max-width: none;
+    }
+
+    .auth-card {
+        padding: 2rem;
+        margin: 1rem;
     }
 }
 

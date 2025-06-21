@@ -74,13 +74,14 @@ def mainpage():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     db = get_db()
-    if request.method == 'POST' and request.is_json:
-        data = request.get_json()
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
         if not username or not email or not password:
-            return jsonify({'error': 'Tous les champs sont obligatoires.'}), 400
+            flash('Tous les champs sont obligatoires.', 'error')
+            return render_template('register.html')
         
         # Hash the password before storing
         hashed_password = generate_password_hash(password)
@@ -91,11 +92,15 @@ def register():
                 (username, email, hashed_password)
             )
             db.commit()
-            return jsonify({'success': True}), 200
+            flash('Inscription réussie! Vous pouvez maintenant vous connecter.', 'success')
+            return redirect(url_for('login'))
         except db.IntegrityError:
-            return jsonify({'error': 'Email ou nom d\'utilisateur déjà utilisé.'}), 400
+            flash('Email ou nom d\'utilisateur déjà utilisé.', 'error')
+            return render_template('register.html')
         except Exception as e:
-            return jsonify({'error': "Erreur inattendue l'inscription."}), 500
+            flash("Erreur inattendue lors de l'inscription.", 'error')
+            return render_template('register.html')
+    
     return render_template('register.html')
 
 
@@ -103,10 +108,14 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     db = get_db()
-    if request.method == 'POST' and request.is_json:
-        data = request.get_json()
-        username = data.get('username')
-        password = data.get('password')
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if not username or not password:
+            flash('Nom d\'utilisateur et mot de passe requis.', 'error')
+            return render_template('login.html')
+        
         try:
             # First, get the user by username only
             user = db.execute(
@@ -118,11 +127,15 @@ def login():
             if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['id']
                 session['username'] = user['username']
-                return jsonify({'success': True}), 200
+                flash('Connexion réussie!', 'success')
+                return redirect(url_for('dashboard'))
             else:
-                return jsonify({'error': 'Identifiants invalides.'}), 401
+                flash('Identifiants invalides.', 'error')
+                return render_template('login.html')
         except Exception as e:
-            return jsonify({'error': "Erreur inattendue lors de la connexion."}), 500
+            flash("Erreur inattendue lors de la connexion.", 'error')
+            return render_template('login.html')
+    
     return render_template('login.html')
 
 # --- Logout ---
@@ -146,7 +159,7 @@ def dashboard():
             if file and file.filename:
                 # Check file type
                 if not is_allowed_file(file.filename):
-                    flash('Type de fichier non autorisé.')
+                    flash('Type de fichier non autorisé.', 'error')
                     return redirect(url_for('dashboard'))
                 
                 # Generate unique filename and sanitize original name
@@ -163,7 +176,7 @@ def dashboard():
                     file_size = os.path.getsize(filepath)
                     
                 except Exception as e:
-                    flash('Erreur lors de l\'enregistrement du fichier.')
+                    flash('Erreur lors de l\'enregistrement du fichier.', 'error')
                     return redirect(url_for('dashboard'))
                 
                 try:
@@ -172,15 +185,15 @@ def dashboard():
                         (user_id, unique_filename, safe_original_name, file_hash, file_size, datetime.now().isoformat())
                     )
                     db.commit()
-                    flash('Fichier téléversé avec succès!')
+                    flash('Fichier téléversé avec succès!', 'success')
                 except Exception as e:
-                    flash('Erreur lors de l\'enregistrement en base de données.')
+                    flash('Erreur lors de l\'enregistrement en base de données.', 'error')
                     if os.path.exists(filepath):
                         os.remove(filepath)
             else:
-                flash('Aucun fichier sélectionné.')
+                flash('Aucun fichier sélectionné.', 'error')
         except Exception as e:
-            flash('Erreur inattendue lors du téléversement.')
+            flash('Erreur inattendue lors du téléversement.', 'error')
 
     try:
         files = db.execute(
@@ -188,7 +201,7 @@ def dashboard():
             (user_id,)
         ).fetchall()
     except Exception as e:
-        flash('Erreur lors de la récupération des fichiers.')
+        flash('Erreur lors de la récupération des fichiers.', 'error')
         files = []
     return render_template('dashboard.html', files=files, username=session['username'])
 
@@ -205,7 +218,7 @@ def download(file_id):
             (file_id, session['user_id'])
         ).fetchone()
     except Exception as e:
-        flash('Erreur lors de la récupération du fichier.')
+        flash('Erreur lors de la récupération du fichier.', 'error')
         return redirect(url_for('dashboard'))
     
     if file:
@@ -215,7 +228,7 @@ def download(file_id):
                 # Verify file integrity
                 current_hash = get_file_hash(filepath)
                 if current_hash != file['file_hash']:
-                    flash('Erreur: Le fichier a été corrompu.')
+                    flash('Erreur: Le fichier a été corrompu.', 'error')
                     return redirect(url_for('dashboard'))
                 
                 # Serve file with original filename
@@ -226,13 +239,13 @@ def download(file_id):
                     download_name=file['original_filename']
                 )
             except Exception as e:
-                flash('Erreur lors du téléchargement du fichier.')
+                flash('Erreur lors du téléchargement du fichier.', 'error')
                 return redirect(url_for('dashboard'))
         else:
-            flash('Fichier introuvable sur le serveur.')
+            flash('Fichier introuvable sur le serveur.', 'error')
             return redirect(url_for('dashboard'))
     else:
-        flash('Fichier introuvable ou non autorisé.')
+        flash('Fichier introuvable ou non autorisé.', 'error')
         return redirect(url_for('dashboard'))
 
 # --- Delete File ---
@@ -248,7 +261,7 @@ def delete(file_id):
             (file_id, session['user_id'])
         ).fetchone()
     except Exception as e:
-        flash('Erreur lors de la récupération du fichier à supprimer.')
+        flash('Erreur lors de la récupération du fichier à supprimer.', 'error')
         return redirect(url_for('dashboard'))
     
     if file:
@@ -257,16 +270,16 @@ def delete(file_id):
             if os.path.exists(filepath):
                 os.remove(filepath)
         except Exception as e:
-            flash('Erreur lors de la suppression du fichier sur le disque.')
+            flash('Erreur lors de la suppression du fichier sur le disque.', 'error')
             return redirect(url_for('dashboard'))
         try:
             db.execute("DELETE FROM files WHERE id = ?", (file_id,))
             db.commit()
-            flash('Fichier supprimé avec succès.')
+            flash('Fichier supprimé avec succès.', 'success')
         except Exception as e:
-            flash('Erreur lors de la suppression en base de données.')
+            flash('Erreur lors de la suppression en base de données.', 'error')
     else:
-        flash('Fichier introuvable ou non autorisé.')
+        flash('Fichier introuvable ou non autorisé.', 'error')
     return redirect(url_for('dashboard'))
 
 

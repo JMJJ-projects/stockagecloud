@@ -1,11 +1,17 @@
 import os
+import uuid
+import hashlib
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, flash, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from db import get_db, close_db, init_db_command
 
 # --- Flask App Setup ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev'  # Change for production!
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -13,6 +19,43 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # --- Register DB helpers ---
 app.teardown_appcontext(close_db)
 app.cli.add_command(init_db_command)
+
+# --- File Security Functions ---
+def generate_unique_filename(original_filename):
+    """Generate a unique filename using UUID and preserve original extension."""
+    # Sanitize the original filename
+    safe_filename = secure_filename(original_filename)
+    
+    # Get file extension
+    _, file_extension = os.path.splitext(safe_filename)
+    
+    # Generate unique identifier
+    unique_id = str(uuid.uuid4())
+    
+    # Combine unique ID with original extension
+    unique_filename = f"{unique_id}{file_extension}"
+    
+    return unique_filename, safe_filename
+
+def get_file_hash(file_path):
+    """Calculate SHA-256 hash of a file."""
+    hash_sha256 = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_sha256.update(chunk)
+    return hash_sha256.hexdigest()
+
+def is_allowed_file(filename):
+    """Check if file type is allowed."""
+    ALLOWED_EXTENSIONS = {
+        'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg',
+        'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+        'mp3', 'wav', 'flac', 'aac', 'ogg',
+        'mp4', 'avi', 'mov', 'wmv', 'flv',
+        'zip', 'rar', '7z', 'tar', 'gz'
+    }
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- Routes ---
 
@@ -38,10 +81,14 @@ def register():
         password = data.get('password')
         if not username or not email or not password:
             return jsonify({'error': 'Tous les champs sont obligatoires.'}), 400
+        
+        # Hash the password before storing
+        hashed_password = generate_password_hash(password)
+        
         try:
             db.execute(
                 "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-                (username, email, password)
+                (username, email, hashed_password)
             )
             db.commit()
             return jsonify({'success': True}), 200
@@ -61,11 +108,14 @@ def login():
         username = data.get('username')
         password = data.get('password')
         try:
+            # First, get the user by username only
             user = db.execute(
-                "SELECT * FROM users WHERE username = ? AND password = ?",
-                (username, password)
+                "SELECT * FROM users WHERE username = ?",
+                (username,)
             ).fetchone()
-            if user:
+            
+            # Then verify the password
+            if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['id']
                 session['username'] = user['username']
                 return jsonify({'success': True}), 200
@@ -94,26 +144,41 @@ def dashboard():
         try:
             file = request.files['file']
             if file and file.filename:
-                filename = file.filename
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                # Check file type
+                if not is_allowed_file(file.filename):
+                    flash('Type de fichier non autorisé.')
+                    return redirect(url_for('dashboard'))
+                
+                # Generate unique filename and sanitize original name
+                unique_filename, safe_original_name = generate_unique_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                
                 try:
                     file.save(filepath)
+                    
+                    # Calculate file hash
+                    file_hash = get_file_hash(filepath)
+                    
+                    # Get file size
+                    file_size = os.path.getsize(filepath)
+                    
                 except Exception as e:
                     flash('Erreur lors de l\'enregistrement du fichier.')
                     return redirect(url_for('dashboard'))
+                
                 try:
                     db.execute(
-                        "INSERT INTO files (user_id, filename) VALUES (?, ?)",
-                        (user_id, filename)
+                        "INSERT INTO files (user_id, filename, original_filename, file_hash, file_size, upload_date) VALUES (?, ?, ?, ?, ?, ?)",
+                        (user_id, unique_filename, safe_original_name, file_hash, file_size, datetime.now().isoformat())
                     )
                     db.commit()
-                    flash('File uploaded!')
+                    flash('Fichier téléversé avec succès!')
                 except Exception as e:
                     flash('Erreur lors de l\'enregistrement en base de données.')
                     if os.path.exists(filepath):
                         os.remove(filepath)
             else:
-                flash('No file selected.')
+                flash('Aucun fichier sélectionné.')
         except Exception as e:
             flash('Erreur inattendue lors du téléversement.')
 
@@ -142,14 +207,32 @@ def download(file_id):
     except Exception as e:
         flash('Erreur lors de la récupération du fichier.')
         return redirect(url_for('dashboard'))
+    
     if file:
-        try:
-            return send_from_directory(app.config['UPLOAD_FOLDER'], file['filename'], as_attachment=True)
-        except Exception as e:
-            flash('Erreur lors du téléchargement du fichier.')
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file['filename'])
+        if os.path.exists(filepath):
+            try:
+                # Verify file integrity
+                current_hash = get_file_hash(filepath)
+                if current_hash != file['file_hash']:
+                    flash('Erreur: Le fichier a été corrompu.')
+                    return redirect(url_for('dashboard'))
+                
+                # Serve file with original filename
+                return send_from_directory(
+                    app.config['UPLOAD_FOLDER'], 
+                    file['filename'], 
+                    as_attachment=True,
+                    download_name=file['original_filename']
+                )
+            except Exception as e:
+                flash('Erreur lors du téléchargement du fichier.')
+                return redirect(url_for('dashboard'))
+        else:
+            flash('Fichier introuvable sur le serveur.')
             return redirect(url_for('dashboard'))
     else:
-        flash('File not found or unauthorized.')
+        flash('Fichier introuvable ou non autorisé.')
         return redirect(url_for('dashboard'))
 
 # --- Delete File ---
@@ -167,6 +250,7 @@ def delete(file_id):
     except Exception as e:
         flash('Erreur lors de la récupération du fichier à supprimer.')
         return redirect(url_for('dashboard'))
+    
     if file:
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], file['filename'])
         try:
@@ -178,11 +262,11 @@ def delete(file_id):
         try:
             db.execute("DELETE FROM files WHERE id = ?", (file_id,))
             db.commit()
-            flash('File deleted.')
+            flash('Fichier supprimé avec succès.')
         except Exception as e:
             flash('Erreur lors de la suppression en base de données.')
     else:
-        flash('File not found or unauthorized.')
+        flash('Fichier introuvable ou non autorisé.')
     return redirect(url_for('dashboard'))
 
 

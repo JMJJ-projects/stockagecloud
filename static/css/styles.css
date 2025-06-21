@@ -415,6 +415,13 @@ nav {
     margin: 0;
 }
 
+.file-size {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0;
+    margin-top: 0.25rem;
+}
+
 .file-actions {
     display: flex;
     gap: 0.5rem;

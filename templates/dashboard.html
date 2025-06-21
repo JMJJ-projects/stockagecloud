@@ -88,8 +88,9 @@
                             {% endif %}
                         </div>
                         <div class="file-info">
-                            <h3 class="file-name">{{ file.filename }}</h3>
+                            <h3 class="file-name">{{ file.original_filename }}</h3>
                             <p class="file-date">{{ file.upload_date }}</p>
+                            <p class="file-size">{{ (file.file_size / 1024) | round(1) }} KB</p>
                         </div>
                         <div class="file-actions">
                             <a href="{{ url_for('download', file_id=file.id) }}" class="btn-download" title="Télécharger">

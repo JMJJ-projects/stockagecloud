@@ -1,73 +1,62 @@
 # StockageCloud
 
-A modern, secure cloud storage web application built with Flask that allows users to upload, store, and manage their files with a beautiful, responsive interface.
+## Prérequis
 
-## Features
-
-- 🔐 **User Authentication**: Secure login and registration system with password hashing
-- 📁 **File Management**: Upload, download, and delete files with security features
-- 🎨 **Modern UI**: Clean, responsive design with drag-and-drop functionality
-- 📱 **Mobile Friendly**: Optimized for all device sizes
-- 🔒 **Secure Storage**: Files are stored securely with user isolation and integrity checks
-- ⚡ **Real-time Feedback**: Instant notifications and loading states
-- 🛡️ **File Security**: Unique filenames, type validation, and corruption detection
-
-## Prerequisites
-
-- Python 3.7 or higher
-- pip (Python package installer)
+* Python 3.7 ou supérieur
+* `pip` (gestionnaire de paquets Python)
 
 ## Installation
 
-### 1. Clone the Repository
+### 1. Cloner le dépôt
 
 ```bash
-git clone <your-repository-url>
+git clone <votre-url-du-dépôt>
 cd StockageCloud
 ```
 
-### 2. Install Dependencies
+### 2. Installer les dépendances
 
-Install the required Python packages:
+Installez les paquets requis :
 
 ```bash
 pip install flask
 ```
 
-Or using the requirements file:
+Ou via le fichier `requirements.txt` :
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Database Setup
+## Configuration de la base de données
 
-### 1. Initialize the Database
+### 1. Initialiser la base de données
 
-Run the following command to create and initialize the database:
+Exécutez la commande suivante pour créer et initialiser la base :
 
 ```bash
 flask --app app.py init-db
 ```
 
-This command will:
-- Create the `database.db` file if it doesn't exist
-- Set up the necessary tables for users and files
-- Initialize the database schema
+Cette commande va :
 
-## Running the Application
+* Créer le fichier `database.db` s’il n’existe pas
+* Créer les tables nécessaires pour les utilisateurs et les fichiers
+* Initialiser le schéma de base de données
 
-### 1. Start the Flask Server
+## Lancement de l’application
 
-Run the application with:
+### 1. Démarrer le serveur Flask
+
+Lancez l’application avec :
 
 ```bash
 flask --app app.py run
 ```
 
-### 2. Access the Application
+### 2. Accéder à l’application
 
-After running the command, you should see output similar to:
+Après l’exécution de la commande, vous devriez voir une sortie semblable à :
 
 ```
  * Serving Flask app 'app.py'
@@ -75,117 +64,47 @@ After running the command, you should see output similar to:
  * Running on http://127.0.0.1:5000
 ```
 
-Click on the URL link (`http://127.0.0.1:5000`) or copy and paste it into your web browser.
+Cliquez sur le lien (`http://127.0.0.1:5000`) ou copiez-collez-le dans votre navigateur.
 
-## Usage
+## Utilisation
 
-### 1. Registration
-- Navigate to the registration page
-- Create a new account with your email and password
-- **Your password will be securely hashed before storage**
+### 1. Inscription
 
-### 2. Login
-- Use your registered credentials to log in
-- You'll be redirected to your personal dashboard
+* Rendez-vous sur la page d’inscription
+* Créez un compte avec votre e-mail et votre mot de passe
+* **Votre mot de passe sera haché de manière sécurisée avant d’être stocké**
 
-### 3. File Management
-- **Upload Files**: Drag and drop files or click to select them
-- **Download Files**: Click the download button on any file
-- **Delete Files**: Click the delete button to remove files (with confirmation)
+### 2. Connexion
 
-## Project Structure
+* Connectez-vous avec vos identifiants
+* Vous serez redirigé vers votre tableau de bord personnel
+
+### 3. Gestion des fichiers
+
+* **Téléverser des fichiers** : Glissez-déposez vos fichiers ou cliquez pour les sélectionner
+* **Télécharger des fichiers** : Cliquez sur le bouton de téléchargement à côté du fichier
+* **Supprimer des fichiers** : Cliquez sur le bouton de suppression (avec confirmation)
+
+## Structure du projet
 
 ```
 StockageCloud/
-├── app.py              # Main Flask application
-├── db.py               # Database operations
-├── schema.sql          # Database schema
-├── database.db         # SQLite database (created after init-db)
-├── static/             # Static assets
+├── app.py               # Application Flask principale
+├── db.py                # Opérations sur la base de données
+├── schema.sql           # Schéma de la base de données
+├── database.db          # Base SQLite (créée après init-db)
+├── static/              # Contenus statiques
 │   ├── css/
-│   │   └── styles.css  # Main stylesheet
+│   │   └── styles.css   # Feuille de style principale
 │   └── js/
-│       ├── dashboard.js # Dashboard functionality
-│       ├── login.js     # Login page scripts
-│       └── register.js  # Registration scripts
-├── templates/          # HTML templates
-│   ├── dashboard.html  # User dashboard
-│   ├── index.html      # Landing page
-│   ├── login.html      # Login page
-│   ├── mainpage.html   # Main page
-│   └── register.html   # Registration page
-└── uploads/            # File storage directory
+│       ├── dashboard.js # Scripts pour le tableau de bord
+│       ├── login.js     # Scripts de la page de connexion
+│       └── register.js  # Scripts de la page d'inscription
+├── templates/           # Modèles HTML
+│   ├── dashboard.html   # Tableau de bord utilisateur
+│   ├── index.html       # Page d’accueil
+│   ├── login.html       # Page de connexion
+│   ├── mainpage.html    # Page principale
+│   └── register.html    # Page d'inscription
+└── uploads/             # Dossier de stockage des fichiers
 ```
-
-## Configuration
-
-The application uses default Flask configuration. Key settings:
-
-- **Database**: SQLite database (`database.db`)
-- **File Storage**: `uploads/` directory
-- **Port**: 5000 (default Flask port)
-- **Debug Mode**: Off (for production)
-- **Max File Size**: 50MB
-- **Allowed File Types**: Common document, image, audio, video, and archive formats
-
-## Security Features
-
-- **Password Hashing**: All passwords are hashed using Werkzeug's PBKDF2 with SHA256
-- **File Security**: 
-  - Unique UUID-based filenames prevent overwrites
-  - Original filenames are sanitized and preserved
-  - File type validation prevents malicious uploads
-  - SHA-256 file integrity checks detect corruption
-  - File size limits prevent abuse
-- User session management
-- File access isolation (users can only access their own files)
-- CSRF protection
-- Secure file upload handling
-- Protection against SQL injection
-
-## Supported File Types
-
-- **Documents**: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT
-- **Images**: PNG, JPG, JPEG, GIF, BMP, SVG
-- **Audio**: MP3, WAV, FLAC, AAC, OGG
-- **Video**: MP4, AVI, MOV, WMV, FLV
-- **Archives**: ZIP, RAR, 7Z, TAR, GZ
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Port already in use**: If port 5000 is busy, Flask will automatically try the next available port
-2. **Database errors**: Run `flask --app app.py init-db` to recreate the database
-3. **Permission errors**: Ensure you have write permissions in the project directory
-
-### Development Mode
-
-For development with auto-reload:
-
-```bash
-flask --app app.py run --debug
-```
-
-## Browser Compatibility
-
-- Chrome 60+
-- Firefox 55+
-- Safari 12+
-- Edge 79+
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
----
-
-**Note**: This is a development application. For production use, consider implementing additional security measures, using a production WSGI server, and setting up proper environment variables for sensitive configuration. 

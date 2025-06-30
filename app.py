@@ -1,7 +1,7 @@
 import os
 import uuid
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -181,8 +181,8 @@ def dashboard():
                 
                 try:
                     db.execute(
-                        "INSERT INTO files (user_id, filename, original_filename, file_hash, file_size, upload_date) VALUES (?, ?, ?, ?, ?, ?)",
-                        (user_id, unique_filename, safe_original_name, file_hash, file_size, datetime.now().isoformat())
+                        "INSERT INTO files (user_id, filename, original_filename, file_hash, file_size, upload_date, delete_date) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (user_id, unique_filename, safe_original_name, file_hash, file_size, datetime.now().isoformat(), 'NULL')
                     )
                     db.commit()
                     flash('Fichier téléversé avec succès!', 'success')
@@ -195,9 +195,42 @@ def dashboard():
         except Exception as e:
             flash('Erreur inattendue lors du téléversement.', 'error')
 
+
+    try:
+        # Calculer la date limite (7 jours avant maintenant)
+        cutoff_date = datetime.now() - timedelta(days=7)
+        
+        # Récupérer les fichiers à supprimer
+        old_files = db.execute(
+            "SELECT * FROM files WHERE delete_date IS NOT NULL AND delete_date < ?",
+            (cutoff_date.isoformat(),)
+        ).fetchall()
+        
+        # Supprimer chaque fichier
+        for file in old_files:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file['filename'])
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except Exception as e:
+                    app.logger.error(f"Erreur suppression fichier {filepath}: {e}")
+                    continue
+            
+            # Supprimer l'entrée en base
+            db.execute("DELETE FROM files WHERE id = ?", (file['id'],))
+        
+        db.commit()
+        
+    except Exception as e:
+        db.rollback()
+        app.logger.error(f"Erreur nettoyage corbeille: {e}")
+
+
+
+
     try:
         files = db.execute(
-            "SELECT * FROM files WHERE user_id = ? ORDER BY upload_date DESC",
+            "SELECT * FROM files WHERE user_id = ? AND delete_date = 'NULL' ORDER BY upload_date DESC",
             (user_id,)
         ).fetchall()
     except Exception as e:
@@ -267,22 +300,100 @@ def delete(file_id):
     if file:
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], file['filename'])
         try:
+            db.execute("UPDATE files SET delete_date = ? WHERE id = ? AND user_id = ?", (datetime.now().isoformat(), file_id, session['user_id']))
+
+            db.commit()
+            flash('Fichier supprimé avec succès.', 'success')
+        except Exception as e:
+            flash('Erreur lors de la suppression en base de données.', 'error')
+        try:
             if os.path.exists(filepath):
                 os.remove(filepath)
         except Exception as e:
             flash('Erreur lors de la suppression du fichier sur le disque.', 'error')
             return redirect(url_for('dashboard'))
-        try:
-            db.execute("DELETE FROM files WHERE id = ?", (file_id,))
-            db.commit()
-            flash('Fichier supprimé avec succès.', 'success')
-        except Exception as e:
-            flash('Erreur lors de la suppression en base de données.', 'error')
     else:
         flash('Fichier introuvable ou non autorisé.', 'error')
     return redirect(url_for('dashboard'))
 
+# --- Trash Page ---
+@app.route('/trash')
+def trash():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
 
+    db = get_db()
+    try:
+        # Récupérer les fichiers supprimés (avec delete_date non NULL)
+        deleted_files = db.execute(
+            "SELECT * FROM files WHERE user_id = ? AND delete_date != 'NULL' ORDER BY delete_date DESC",
+            (session['user_id'],)
+        ).fetchall()
+    except Exception as e:
+        flash('Erreur lors de la récupération des fichiers supprimés.', 'error')
+        deleted_files = []
+    
+    return render_template('trash.html', deleted_files=deleted_files, username=session['username'])
+
+# --- Restore File ---
+@app.route('/restore/<int:file_id>', methods=['POST'])
+def restore(file_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    db = get_db()
+    try:
+        # Vérifier que le fichier appartient bien à l'utilisateur
+        file = db.execute(
+            "SELECT * FROM files WHERE id = ? AND user_id = ? AND delete_date != 'NULL'",
+            (file_id, session['user_id'])
+        ).fetchone()
+        
+        if file:
+            # Restaurer le fichier (mettre delete_date à NULL)
+            db.execute(
+                "UPDATE files SET delete_date = 'NULL' WHERE id = ?",
+                (file_id,)
+            )
+            db.commit()
+            flash('Fichier restauré avec succès.', 'success')
+        else:
+            flash('Fichier introuvable ou non autorisé.', 'error')
+    except Exception as e:
+        flash('Erreur lors de la restauration du fichier.', 'error')
+    
+    return redirect(url_for('trash'))
+
+# --- Permanent Delete ---
+@app.route('/permanent_delete/<int:file_id>', methods=['POST'])
+def permanent_delete(file_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    db = get_db()
+    try:
+        # Vérifier que le fichier appartient bien à l'utilisateur
+        file = db.execute(
+            "SELECT * FROM files WHERE id = ? AND user_id = ? AND delete_date != 'NULL'",
+            (file_id, session['user_id'])
+        ).fetchone()
+        
+        if file:
+            # Supprimer physiquement le fichier
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file['filename'])
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            
+            # Supprimer l'entrée en base de données
+            db.execute("DELETE FROM files WHERE id = ?", (file_id,))
+            db.commit()
+            flash('Fichier supprimé définitivement.', 'success')
+        else:
+            flash('Fichier introuvable ou non autorisé.', 'error')
+    except Exception as e:
+        flash('Erreur lors de la suppression définitive.', 'error')
+    
+    return redirect(url_for('trash'))
 
 # --- Run App ---
 if __name__ == '__main__':

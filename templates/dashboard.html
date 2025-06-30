@@ -17,6 +17,12 @@
             </div>
             <div class="nav-user">
                 <span class="user-greeting">Bonjour, {{ email or username }}</span>
+                
+                <a href="{{ url_for('trash') }}" class="btn-dashboard">
+                    <i class="fas fa-home"></i>
+                    Corbeille
+                </a>
+
                 <a href="{{ url_for('logout') }}" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i>
                     Déconnexion
@@ -50,6 +56,9 @@
                     </form>
                 </div>
             </section>
+
+   
+            
 
             <!-- Files Section -->
             <section class="files-section">

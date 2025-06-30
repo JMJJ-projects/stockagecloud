@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corbeille - StockageCloud</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <nav class="dashboard-nav">
+            <div class="nav-brand">
+                <i class="fas fa-cloud"></i>
+                <span>StockageCloud</span>
+            </div>
+            <div class="nav-user">
+                <a href="{{ url_for('dashboard') }}" class="btn-dashboard">
+                    <i class="fas fa-home"></i>
+                    Retour au dashboard
+                </a>
+                <span class="user-greeting">Bonjour, {{ email or username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            <!-- Corbeille Section -->
+            <section class="files-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-trash"></i> Corbeille</h2>
+                    {% if deleted_files %}
+                    <span class="file-count">{{ deleted_files|length }} fichier{{ 's' if deleted_files|length > 1 else '' }} supprimé{{ 's' if deleted_files|length > 1 else '' }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if deleted_files %}
+                <div class="files-grid">
+                    {% for file in deleted_files %}
+                    <div class="file-card">
+                        <div class="file-icon">
+                            {% if file.filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg')) %}
+                                <i class="fas fa-image"></i>
+                            {% elif file.filename.lower().endswith(('.mp3', '.wav', '.flac', '.aac', '.ogg')) %}
+                                <i class="fas fa-music"></i>
+                            {% elif file.filename.lower().endswith(('.mp4', '.avi', '.mov', '.wmv', '.flv')) %}
+                                <i class="fas fa-video"></i>
+                            {% elif file.filename.lower().endswith(('.pdf')) %}
+                                <i class="fas fa-file-pdf"></i>
+                            {% elif file.filename.lower().endswith(('.doc', '.docx')) %}
+                                <i class="fas fa-file-word"></i>
+                            {% elif file.filename.lower().endswith(('.xls', '.xlsx')) %}
+                                <i class="fas fa-file-excel"></i>
+                            {% elif file.filename.lower().endswith(('.ppt', '.pptx')) %}
+                                <i class="fas fa-file-powerpoint"></i>
+                            {% elif file.filename.lower().endswith(('.zip', '.rar', '.7z', '.tar', '.gz')) %}
+                                <i class="fas fa-file-archive"></i>
+                            {% elif file.filename.lower().endswith(('.txt', '.md', '.rtf')) %}
+                                <i class="fas fa-file-alt"></i>
+                            {% else %}
+                                <i class="fas fa-file"></i>
+                            {% endif %}
+                        </div>
+                        <div class="file-info">
+                            <h3 class="file-name">{{ file.original_filename }}</h3>
+                            <p class="file-date">Supprimé le : {{ file.delete_date }}</p>
+                            <p class="file-size">{{ (file.file_size / 1024) | round(1) }} KB</p>
+                        </div>
+                        <div class="file-actions">
+                            <form action="{{ url_for('restore', file_id=file.id) }}" method="post" class="restore-form">
+                                <button type="submit" class="btn-restore" title="Restaurer">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            </form>
+                            <form action="{{ url_for('permanent_delete', file_id=file.id) }}" method="post" class="delete-form">
+                                <button type="submit" class="btn-delete" title="Supprimer définitivement">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-trash"></i>
+                    <h3>Corbeille vide</h3>
+                    <p>Aucun fichier n'a été supprimé.</p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <!-- Message Display -->
+    <div id="dashboard-message" class="message-container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message message-info">
+                        <i class="fas fa-info-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev'  # Change for production!
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
+MAX_QUOTA_BYTES = 500 * 1024 * 1024 #500 Mo
 
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -153,10 +154,24 @@ def dashboard():
     db = get_db()
     user_id = session['user_id']
 
+
+    #calcule de l'espace utilisé
+    result = db.execute("SELECT SUM(file_size) AS total FROM files WHERE user_id = ? AND delete_data = 'NULL'",(user_id,)).fetchone()
+    used_space = result["total"] if result["total"] else 0
+
+
     if request.method == 'POST':
         try:
             file = request.files['file']
             if file and file.filename:
+                #check quota
+                file.seek(0, os.SEEK_END)
+                file_size_new = file.tell()
+                file.seek(0)
+
+                if used_space + file_size_new > MAX_QUOTA_BYTES:
+                    flash(f"Quota dépassé : vous avez utilisé {round(used_space / (1024*1024),1)} Mo sur 500 Mo. Veuillez supprimer des fichiers avant de téléverser.", "error")
+                    return redirect(url_for('dashboard')))
                 # Check file type
                 if not is_allowed_file(file.filename):
                     flash('Type de fichier non autorisé.', 'error')
@@ -236,7 +251,7 @@ def dashboard():
     except Exception as e:
         flash('Erreur lors de la récupération des fichiers.', 'error')
         files = []
-    return render_template('dashboard.html', files=files, username=session['username'])
+    return render_template('dashboard.html', files=files, username=session['username'], used_space=used_space, max_quota=MAX_QUOTA_BYTES))
 
 # --- Download File ---
 @app.route('/download/<int:file_id>')

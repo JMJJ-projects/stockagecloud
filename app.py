@@ -197,12 +197,12 @@ def dashboard():
 
 
     try:
-        # Calculer la date limite (7 jours avant maintenant)
-        cutoff_date = datetime.now() - timedelta(days=7)
+        # Calculer la date limite (30 secondes avant maintenant)
+        cutoff_date = datetime.now() - timedelta(seconds=30)
         
         # Récupérer les fichiers à supprimer
         old_files = db.execute(
-            "SELECT * FROM files WHERE delete_date IS NOT NULL AND delete_date < ?",
+            "SELECT * FROM files WHERE delete_date != 'NULL' AND delete_date < ?",
             (cutoff_date.isoformat(),)
         ).fetchall()
         

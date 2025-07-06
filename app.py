@@ -156,7 +156,7 @@ def dashboard():
 
 
     #calcule de l'espace utilisé
-    result = db.execute("SELECT SUM(file_size) AS total FROM files WHERE user_id = ? AND delete_data = 'NULL'",(user_id,)).fetchone()
+    result = db.execute("SELECT SUM(file_size) AS total FROM files WHERE user_id = ? AND delete_date = 'NULL'",(user_id,)).fetchone()
     used_space = result["total"] if result["total"] else 0
 
 

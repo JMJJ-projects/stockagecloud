@@ -293,3 +293,40 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
+
+// History
+/*function formatAction(action) {
+    const icons = {
+        'upload': 'Téléversement',
+        'download': 'Téléchargement',
+        'delete': 'Suppression',
+        'restore': 'Restauration',
+        'permanent_delete': 'Suppression définitive'
+    };
+    return icons[action] || action;
+}
+*/
+
+fetch('/history')
+    .then(response => {
+        if (!response.ok) throw new Error("Non autorisé ou erreur serveur");
+        return response.json();
+    })
+    .then(data => {
+        const tbody = document.querySelector('#historyTable tbody');
+        data.forEach(entry => {
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${entry.timestamp}</td>
+                <td>${entry.action}</td>
+                <td>${entry.original_filename || 'N/A'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    })
+    .catch(err => {
+        const msg = document.getElementById('errorMessage');
+        msg.textContent = err.message;
+        msg.classList.remove('d-none');
+    });

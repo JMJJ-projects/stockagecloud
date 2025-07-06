@@ -23,6 +23,11 @@
                     Corbeille
                 </a>
 
+                <a href="{{ url_for('history') }}" class="btn-history">
+                    <i class="fas fa-home"></i>
+                    Historique
+                </a>
+
                 <a href="{{ url_for('logout') }}" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i>
                     Déconnexion
@@ -57,14 +62,9 @@
                 </div>
             </section>
 
-            <div class="quota-container">
-                <h3>Espace utilisé</h3>
-                <div class="quota-bar-wrapper">
-                    <div class="quota-bar" style="width{{ (used_space / max_quota * 100) | round(1) }}%;"></div>
-                </div>
-                <p>{{ (used_space / (1024*1024)) | round(1) }} Mo utilisés sur 500 Mo</p>
-            </div>
+   
             
+
             <!-- Files Section -->
             <section class="files-section">
                 <div class="section-header">

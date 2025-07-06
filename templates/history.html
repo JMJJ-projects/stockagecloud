@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique - StockageCloud</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <nav class="dashboard-nav">
+            <div class="nav-brand">
+                <i class="fas fa-cloud"></i>
+                <span>StockageCloud</span>
+            </div>
+            <div class="nav-user">
+                <a href="{{ url_for('dashboard') }}" class="btn-dashboard">
+                    <i class="fas fa-home"></i>
+                    Retour au dashboard
+                </a>
+                <span class="user-greeting">Bonjour, {{ email or username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container mt-4">
+        <h2><i class="fas historique">Historique de l'utilisateur {{ username }}</i></h2>
+    
+        {% if logs %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Action</th>
+                    <th>Nom du fichier</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log['timestamp'] }}</td>
+                    <td>{{ log['action'] }}</td>
+                    <td>{{ log['original_filename'] or '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>Aucune action enregistrée pour l’instant.</p>
+        {% endif %}
+
+    <a href="{{ url_for('dashboard') }}">← Retour au tableau de bord</a>
+</body>
+</html>
+

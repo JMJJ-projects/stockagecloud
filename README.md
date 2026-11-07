@@ -6,6 +6,8 @@ A self-hostable file storage web app written in Python/Flask, built with a secur
 every file is **encrypted at rest with AES-256-GCM**, integrity-checked on every download, and
 shared only through expiring, revocable links.
 
+**Live demo:** [johnm123.pythonanywhere.com](https://johnm123.pythonanywhere.com/mainpage) (free hosting, so the demo data may be reset; don't upload anything personal).
+
 I started it in 2025 as a summer project in place of an internship and later hardened it
 (encryption, CSRF protection, brute-force throttling, a test suite, Docker and CI).
 

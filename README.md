@@ -8,8 +8,8 @@ shared only through expiring, revocable links.
 
 **Live demo:** [johnm123.pythonanywhere.com](https://johnm123.pythonanywhere.com/mainpage) (free hosting, so the demo data may be reset; don't upload anything personal).
 
-I started it in 2025 as a summer project in place of an internship and later hardened it
-(encryption, CSRF protection, brute-force throttling, a test suite, Docker and CI).
+Built in summer 2025 as a team of three with Aliou Dia and Abdoulaye Haidara. In 2026 I reworked
+it on my own: encryption at rest, CSRF protection, brute-force throttling, a test suite, Docker and CI.
 
 ![Dashboard](docs/screenshots/dashboard.png)
 

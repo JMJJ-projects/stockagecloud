@@ -6,6 +6,8 @@
     <title>Connexion - StockageCloud</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>(function(){var t=document.querySelector('meta[name="csrf-token"]').content,f=window.fetch;window.fetch=function(u,o){o=o||{};if((o.method||"GET").toUpperCase()!=="GET"){o.headers=new Headers(o.headers||{});o.headers.set("X-CSRFToken",t);}return f(u,o);};})();</script>
 </head>
 <body>
     <div class="auth-container">
@@ -35,6 +37,7 @@
             {% endwith %}
             
             <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <input type="text" name="username" placeholder="Nom d'utilisateur" required>
                 </div>

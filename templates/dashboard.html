@@ -6,6 +6,8 @@
     <title>Tableau de bord - StockageCloud</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>(function(){var t=document.querySelector('meta[name="csrf-token"]').content,f=window.fetch;window.fetch=function(u,o){o=o||{};if((o.method||"GET").toUpperCase()!=="GET"){o.headers=new Headers(o.headers||{});o.headers.set("X-CSRFToken",t);}return f(u,o);};})();</script>
 </head>
 <body>
     <!-- Header -->
@@ -19,13 +21,18 @@
                 <span class="user-greeting">Bonjour, {{ email or username }}</span>
                 
                 <a href="{{ url_for('trash') }}" class="btn-dashboard">
-                    <i class="fas fa-home"></i>
+                    <i class="fas fa-trash-can"></i>
                     Corbeille
                 </a>
 
                 <a href="{{ url_for('history') }}" class="btn-history">
-                    <i class="fas fa-home"></i>
+                    <i class="fas fa-clock-rotate-left"></i>
                     Historique
+                </a>
+
+                <a href="{{ url_for('manage_shares') }}" class="btn-shares">
+                    <i class="fas fa-share-alt"></i>
+                    Liens de partage
                 </a>
 
                 <a href="{{ url_for('logout') }}" class="btn-logout">
@@ -46,6 +53,7 @@
                 </div>
                 <div class="upload-card">
                     <form action="{{ url_for('dashboard') }}" method="post" enctype="multipart/form-data" class="upload-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="file-input-wrapper">
                             <input type="file" name="file" id="fileInput" required>
                             <label for="fileInput" class="file-input-label">
@@ -62,8 +70,14 @@
                 </div>
             </section>
 
-   
             
+            <div class="quota-container">
+                <h3>Espace utilisé</h3>
+                <div class="quota-bar-wrapper">
+                    <div class="quota-bar" style="width: {{ (used_space / max_quota * 100) | round(1) }}%;"></div>
+                </div>
+                <p>{{ (used_space / (1024*1024)) | round(1) }} Mo utilisés sur 500 Mo</p>
+            </div>
 
             <!-- Files Section -->
             <section class="files-section">
@@ -79,23 +93,23 @@
                     {% for file in files %}
                     <div class="file-card">
                         <div class="file-icon">
-                            {% if file.filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg')) %}
+                            {% if file.original_filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg')) %}
                                 <i class="fas fa-image"></i>
-                            {% elif file.filename.lower().endswith(('.mp3', '.wav', '.flac', '.aac', '.ogg')) %}
+                            {% elif file.original_filename.lower().endswith(('.mp3', '.wav', '.flac', '.aac', '.ogg')) %}
                                 <i class="fas fa-music"></i>
-                            {% elif file.filename.lower().endswith(('.mp4', '.avi', '.mov', '.wmv', '.flv')) %}
+                            {% elif file.original_filename.lower().endswith(('.mp4', '.avi', '.mov', '.wmv', '.flv')) %}
                                 <i class="fas fa-video"></i>
-                            {% elif file.filename.lower().endswith(('.pdf')) %}
+                            {% elif file.original_filename.lower().endswith(('.pdf')) %}
                                 <i class="fas fa-file-pdf"></i>
-                            {% elif file.filename.lower().endswith(('.doc', '.docx')) %}
+                            {% elif file.original_filename.lower().endswith(('.doc', '.docx')) %}
                                 <i class="fas fa-file-word"></i>
-                            {% elif file.filename.lower().endswith(('.xls', '.xlsx')) %}
+                            {% elif file.original_filename.lower().endswith(('.xls', '.xlsx')) %}
                                 <i class="fas fa-file-excel"></i>
-                            {% elif file.filename.lower().endswith(('.ppt', '.pptx')) %}
+                            {% elif file.original_filename.lower().endswith(('.ppt', '.pptx')) %}
                                 <i class="fas fa-file-powerpoint"></i>
-                            {% elif file.filename.lower().endswith(('.zip', '.rar', '.7z', '.tar', '.gz')) %}
+                            {% elif file.original_filename.lower().endswith(('.zip', '.rar', '.7z', '.tar', '.gz')) %}
                                 <i class="fas fa-file-archive"></i>
-                            {% elif file.filename.lower().endswith(('.txt', '.md', '.rtf')) %}
+                            {% elif file.original_filename.lower().endswith(('.txt', '.md', '.rtf')) %}
                                 <i class="fas fa-file-alt"></i>
                             {% else %}
                                 <i class="fas fa-file"></i>
@@ -103,14 +117,18 @@
                         </div>
                         <div class="file-info">
                             <h3 class="file-name">{{ file.original_filename }}</h3>
-                            <p class="file-date">{{ file.upload_date }}</p>
-                            <p class="file-size">{{ (file.file_size / 1024) | round(1) }} KB</p>
+                            <p class="file-date">{{ file.upload_date|dt }}</p>
+                            <p class="file-size">{{ file.file_size|filesizeformat }}</p>
                         </div>
                         <div class="file-actions">
                             <a href="{{ url_for('download', file_id=file.id) }}" class="btn-download" title="Télécharger">
                                 <i class="fas fa-download"></i>
                             </a>
+                            <button class="btn-share" title="Partager" onclick="shareFile({{ file.id }})">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
                             <form action="{{ url_for('delete', file_id=file.id) }}" method="post" class="delete-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn-delete" title="Supprimer">
                                     <i class="fas fa-trash"></i>
                                 </button>

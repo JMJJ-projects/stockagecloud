@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer les liens de partage - StockageCloud</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>(function(){var t=document.querySelector('meta[name="csrf-token"]').content,f=window.fetch;window.fetch=function(u,o){o=o||{};if((o.method||"GET").toUpperCase()!=="GET"){o.headers=new Headers(o.headers||{});o.headers.set("X-CSRFToken",t);}return f(u,o);};})();</script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <nav class="dashboard-nav">
+            <div class="nav-brand">
+                <i class="fas fa-cloud"></i>
+                <span>StockageCloud</span>
+            </div>
+            <div class="nav-user">
+                <span class="user-greeting">Bonjour, {{ username }}</span>
+                
+                <a href="{{ url_for('dashboard') }}" class="btn-dashboard">
+                    <i class="fas fa-house"></i>
+                    Tableau de bord
+                </a>
+
+                <a href="{{ url_for('trash') }}" class="btn-dashboard">
+                    <i class="fas fa-trash"></i>
+                    Corbeille
+                </a>
+
+                <a href="{{ url_for('history') }}" class="btn-history">
+                    <i class="fas fa-history"></i>
+                    Historique
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            <!-- Share Links Section -->
+            <section class="shares-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-share-alt"></i> Mes liens de partage</h2>
+                    {% if share_links %}
+                    <span class="share-count">{{ share_links|length }} lien{{ 's' if share_links|length > 1 else '' }} actif{{ 's' if share_links|length > 1 else '' }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if share_links %}
+                <div class="shares-grid">
+                    {% for share in share_links %}
+                    <div class="share-card">
+                        <div class="share-header">
+                            <div class="file-icon">
+                                {% if share.original_filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg')) %}
+                                    <i class="fas fa-image"></i>
+                                {% elif share.original_filename.lower().endswith(('.mp3', '.wav', '.flac', '.aac', '.ogg')) %}
+                                    <i class="fas fa-music"></i>
+                                {% elif share.original_filename.lower().endswith(('.mp4', '.avi', '.mov', '.wmv', '.flv')) %}
+                                    <i class="fas fa-video"></i>
+                                {% elif share.original_filename.lower().endswith(('.pdf')) %}
+                                    <i class="fas fa-file-pdf"></i>
+                                {% elif share.original_filename.lower().endswith(('.doc', '.docx')) %}
+                                    <i class="fas fa-file-word"></i>
+                                {% elif share.original_filename.lower().endswith(('.xls', '.xlsx')) %}
+                                    <i class="fas fa-file-excel"></i>
+                                {% elif share.original_filename.lower().endswith(('.ppt', '.pptx')) %}
+                                    <i class="fas fa-file-powerpoint"></i>
+                                {% elif share.original_filename.lower().endswith(('.zip', '.rar', '.7z', '.tar', '.gz')) %}
+                                    <i class="fas fa-file-archive"></i>
+                                {% elif share.original_filename.lower().endswith(('.txt', '.md', '.rtf')) %}
+                                    <i class="fas fa-file-alt"></i>
+                                {% else %}
+                                    <i class="fas fa-file"></i>
+                                {% endif %}
+                            </div>
+                            <div class="share-info">
+                                <h3 class="file-name">{{ share.original_filename }}</h3>
+                                <p class="share-date">Créé le: {{ share.created_at|dt(False) }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="share-details">
+                            <div class="share-meta">
+                                <p><i class="fas fa-weight-hanging"></i> {{ share.file_size|filesizeformat }}</p>
+                                <p><i class="fas fa-download"></i> {{ share.download_count }} téléchargement{{ 's' if share.download_count > 1 else '' }}</p>
+                                {% if share.expires_at %}
+                                <p><i class="fas fa-clock"></i> Expire le: {{ share.expires_at|dt(False) }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="share-link">
+                                <label>Lien de partage:</label>
+                                <div class="link-container">
+                                    <input type="text" value="{{ request.host_url.rstrip('/') }}{{ url_for('shared_file', token=share.share_token) }}" readonly class="share-url">
+                                    <button class="btn-copy" onclick="copyToClipboard(this)" title="Copier le lien">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="share-actions">
+                            <form action="{{ url_for('deactivate_share', share_id=share.id) }}" method="post" class="deactivate-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-deactivate" title="Désactiver le lien">
+                                    <i class="fas fa-times"></i>
+                                    Désactiver
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-share-alt"></i>
+                    <h3>Aucun lien de partage</h3>
+                    <p>Vous n'avez pas encore créé de liens de partage.</p>
+                    <a href="{{ url_for('dashboard') }}" class="btn-primary">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour au tableau de bord
+                    </a>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <!-- Message Display -->
+    <div id="shares-message" class="message-container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message message-info">
+                        <i class="fas fa-info-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <script>
+        function copyToClipboard(button) {
+            const input = button.parentElement.querySelector('.share-url');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.style.background = '#10b981';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                    button.style.background = '';
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+            }
+        }
+    </script>
+</body>
+</html> 

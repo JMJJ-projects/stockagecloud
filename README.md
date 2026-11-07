@@ -1,110 +1,100 @@
-# StockageCloud
+# StockageCloud — encrypted personal cloud storage
 
-## Prérequis
+![tests](https://github.com/JMJJ-projects/StockageCloud/actions/workflows/tests.yml/badge.svg)
 
-* Python 3.7 ou supérieur
-* `pip` (gestionnaire de paquets Python)
+A self-hostable file storage web app written in Python/Flask, built with a security-first design:
+every file is **encrypted at rest with AES-256-GCM**, integrity-checked on every download, and
+shared only through expiring, revocable links.
 
-## Installation
+I started it in 2025 as a summer project in place of an internship and later hardened it
+(encryption, CSRF protection, brute-force throttling, a test suite, Docker and CI).
 
-### 1. Cloner le dépôt
+![Dashboard](docs/screenshots/dashboard.png)
+
+## Features
+
+| | |
+|---|---|
+| **Accounts** | Registration with password policy, salted password hashing (Werkzeug scrypt), 8-hour sessions |
+| **Files** | Upload / download / drag-and-drop, 50 MB per file, 500 MB quota per user |
+| **Trash** | Soft delete with restore; files are purged automatically after 30 days |
+| **Sharing** | One-click share links (256-bit random tokens) that expire after 7 days, can be revoked, and count downloads |
+| **History** | Per-user activity log (upload, download, delete, restore, share) |
+
+| Trash | Share links |
+|---|---|
+| ![Trash](docs/screenshots/trash.png) | ![Shares](docs/screenshots/shares.png) |
+
+## Security design
+
+| Threat | Mitigation |
+|---|---|
+| Someone copies the `uploads/` folder or a backup | **Envelope encryption**: each file is encrypted with its own random 256-bit key (AES-256-GCM); that key is itself encrypted with a server master key kept outside the database ([`crypto.py`](crypto.py)) |
+| A stored file is modified or corrupted | GCM authentication tag + SHA-256 checksum verified on every download; tampered files are refused |
+| Ciphertext swapped between two file records | The file's storage ID is bound as GCM associated data |
+| Password guessing | Account + IP lockout after repeated failures (5 per user / 20 per IP in 15 min) |
+| Cross-site request forgery | Per-session CSRF token required on every POST (form field or `X-CSRFToken` header) |
+| Accessing another user's files (IDOR) | Every query is scoped to the logged-in user; covered by tests |
+| Session hijacking / fixation | HttpOnly + SameSite cookies, `Secure` in production, session regenerated at login |
+| Clickjacking, MIME sniffing, XSS | `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, Jinja auto-escaping |
+| Malicious uploads | Extension allow-list, `secure_filename`, files stored under random UUIDs with no extension and never served directly |
+| Leaked secrets | No secrets in code: `SECRET_KEY` and `MASTER_KEY` come from the environment |
+
+## Quick start
 
 ```bash
-git clone <votre-url-du-dépôt>
+git clone https://github.com/JMJJ-projects/StockageCloud.git
 cd StockageCloud
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements-dev.txt
+
+flask --app app gen-keys > .env        # then export the two values (see below)
+flask --app app init-db
+flask --app app run
 ```
 
-### 2. Installer les dépendances
+Set the keys as environment variables before running (`export $(cat .env | xargs)` on Linux/macOS).
+Without them the app still starts but generates throwaway keys, so stored files become unreadable
+after a restart.
 
-Installez les paquets requis :
+### With Docker
 
 ```bash
-pip install flask
+flask --app app gen-keys > .env   # or copy .env.example and fill it in
+docker compose up --build         # http://localhost:8000
 ```
 
-Ou via le fichier `requirements.txt` :
+Data (database + encrypted files) lives in the `stockage-data` volume.
+
+## Tests
 
 ```bash
-pip install -r requirements.txt
+pytest -q
 ```
 
-## Configuration de la base de données
+25 tests cover authentication and lockout, CSRF, encryption at rest, tamper detection,
+cross-user access, quotas, trash retention and share-link expiry/revocation. They run on
+every push via GitHub Actions (Python 3.10 and 3.12).
 
-### 1. Initialiser la base de données
-
-Exécutez la commande suivante pour créer et initialiser la base :
-
-```bash
-flask --app app.py init-db
-```
-
-Cette commande va :
-
-* Créer le fichier `database.db` s’il n’existe pas
-* Créer les tables nécessaires pour les utilisateurs et les fichiers
-* Initialiser le schéma de base de données
-
-## Lancement de l’application
-
-### 1. Démarrer le serveur Flask
-
-Lancez l’application avec :
-
-```bash
-flask --app app.py run
-```
-
-### 2. Accéder à l’application
-
-Après l’exécution de la commande, vous devriez voir une sortie semblable à :
+## Project structure
 
 ```
- * Serving Flask app 'app.py'
- * Debug mode: off
- * Running on http://127.0.0.1:5000
+app.py          Flask app factory and routes
+crypto.py       AES-256-GCM envelope encryption
+security.py     CSRF, login throttling, password policy, HTTP security headers
+db.py           SQLite connection helpers + `init-db` command
+schema.sql      Database schema
+templates/      Jinja templates (UI in French)
+static/         CSS and JavaScript
+tests/          pytest suite
 ```
 
-Cliquez sur le lien (`http://127.0.0.1:5000`) ou copiez-collez-le dans votre navigateur.
+## Possible next steps
 
-## Utilisation
+- Master-key rotation command (re-wrap the per-file keys)
+- Streaming encryption for files larger than memory
+- Two-factor authentication (TOTP)
+- Password-protected share links
 
-### 1. Inscription
-
-* Rendez-vous sur la page d’inscription
-* Créez un compte avec votre e-mail et votre mot de passe
-* **Votre mot de passe sera haché de manière sécurisée avant d’être stocké**
-
-### 2. Connexion
-
-* Connectez-vous avec vos identifiants
-* Vous serez redirigé vers votre tableau de bord personnel
-
-### 3. Gestion des fichiers
-
-* **Téléverser des fichiers** : Glissez-déposez vos fichiers ou cliquez pour les sélectionner
-* **Télécharger des fichiers** : Cliquez sur le bouton de téléchargement à côté du fichier
-* **Supprimer des fichiers** : Cliquez sur le bouton de suppression (avec confirmation)
-
-## Structure du projet
-
-```
-StockageCloud/
-├── app.py               # Application Flask principale
-├── db.py                # Opérations sur la base de données
-├── schema.sql           # Schéma de la base de données
-├── database.db          # Base SQLite (créée après init-db)
-├── static/              # Contenus statiques
-│   ├── css/
-│   │   └── styles.css   # Feuille de style principale
-│   └── js/
-│       ├── dashboard.js # Scripts pour le tableau de bord
-│       ├── login.js     # Scripts de la page de connexion
-│       └── register.js  # Scripts de la page d'inscription
-├── templates/           # Modèles HTML
-│   ├── dashboard.html   # Tableau de bord utilisateur
-│   ├── index.html       # Page d’accueil
-│   ├── login.html       # Page de connexion
-│   ├── mainpage.html    # Page principale
-│   └── register.html    # Page d'inscription
-└── uploads/             # Dossier de stockage des fichiers
-```
+---
+Author: **John-Michael JENY JEYARAJ** · [Portfolio](https://jmjjprojects.com) · [LinkedIn](https://www.linkedin.com/in/jmjj/)

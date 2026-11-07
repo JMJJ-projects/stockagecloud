@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fichier partagé - StockageCloud</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>(function(){var t=document.querySelector('meta[name="csrf-token"]').content,f=window.fetch;window.fetch=function(u,o){o=o||{};if((o.method||"GET").toUpperCase()!=="GET"){o.headers=new Headers(o.headers||{});o.headers.set("X-CSRFToken",t);}return f(u,o);};})();</script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <nav class="dashboard-nav">
+            <div class="nav-brand">
+                <i class="fas fa-cloud"></i>
+                <span>StockageCloud</span>
+            </div>
+            <div class="nav-user">
+                <a href="{{ url_for('mainpage') }}" class="btn-dashboard">
+                    <i class="fas fa-home"></i>
+                    Accueil
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            <!-- Shared File Section -->
+            <section class="shared-file-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-share-alt"></i> Fichier partagé</h2>
+                </div>
+                
+                <div class="shared-file-card">
+                    <div class="file-icon large">
+                        {% if file.original_filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg')) %}
+                            <i class="fas fa-image"></i>
+                        {% elif file.original_filename.lower().endswith(('.mp3', '.wav', '.flac', '.aac', '.ogg')) %}
+                            <i class="fas fa-music"></i>
+                        {% elif file.original_filename.lower().endswith(('.mp4', '.avi', '.mov', '.wmv', '.flv')) %}
+                            <i class="fas fa-video"></i>
+                        {% elif file.original_filename.lower().endswith(('.pdf')) %}
+                            <i class="fas fa-file-pdf"></i>
+                        {% elif file.original_filename.lower().endswith(('.doc', '.docx')) %}
+                            <i class="fas fa-file-word"></i>
+                        {% elif file.original_filename.lower().endswith(('.xls', '.xlsx')) %}
+                            <i class="fas fa-file-excel"></i>
+                        {% elif file.original_filename.lower().endswith(('.ppt', '.pptx')) %}
+                            <i class="fas fa-file-powerpoint"></i>
+                        {% elif file.original_filename.lower().endswith(('.zip', '.rar', '.7z', '.tar', '.gz')) %}
+                            <i class="fas fa-file-archive"></i>
+                        {% elif file.original_filename.lower().endswith(('.txt', '.md', '.rtf')) %}
+                            <i class="fas fa-file-alt"></i>
+                        {% else %}
+                            <i class="fas fa-file"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="file-details">
+                        <h3 class="file-name">{{ file.original_filename }}</h3>
+                        <div class="file-meta">
+                            <p><i class="fas fa-calendar"></i> Téléversé le: {{ file.upload_date|dt(False) }}</p>
+                            <p><i class="fas fa-weight-hanging"></i> Taille: {{ file.file_size|filesizeformat }}</p>
+                            {% if share_link.expires_at %}
+                            <p><i class="fas fa-clock"></i> Expire le: {{ share_link.expires_at|dt(False) }}</p>
+                            {% endif %}
+                            <p><i class="fas fa-download"></i> Téléchargements: {{ share_link.download_count }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="file-actions">
+                        <a href="{{ url_for('download_shared_file', token=share_link.share_token) }}" class="btn-download-large">
+                            <i class="fas fa-download"></i>
+                            Télécharger le fichier
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Message Display -->
+    <div id="shared-message" class="message-container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message message-info">
+                        <i class="fas fa-info-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+</body>
+</html> 

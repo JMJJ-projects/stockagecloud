@@ -6,6 +6,8 @@
     <title>Historique - StockageCloud</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>(function(){var t=document.querySelector('meta[name="csrf-token"]').content,f=window.fetch;window.fetch=function(u,o){o=o||{};if((o.method||"GET").toUpperCase()!=="GET"){o.headers=new Headers(o.headers||{});o.headers.set("X-CSRFToken",t);}return f(u,o);};})();</script>
 </head>
 
 <body>
@@ -17,11 +19,23 @@
                 <span>StockageCloud</span>
             </div>
             <div class="nav-user">
+                <span class="user-greeting">Bonjour, {{ username }}</span>
+                
                 <a href="{{ url_for('dashboard') }}" class="btn-dashboard">
-                    <i class="fas fa-home"></i>
-                    Retour au dashboard
+                    <i class="fas fa-house"></i>
+                    Tableau de bord
                 </a>
-                <span class="user-greeting">Bonjour, {{ email or username }}</span>
+
+                <a href="{{ url_for('trash') }}" class="btn-dashboard">
+                    <i class="fas fa-trash"></i>
+                    Corbeille
+                </a>
+
+                <a href="{{ url_for('manage_shares') }}" class="btn-shares">
+                    <i class="fas fa-share-alt"></i>
+                    Liens de partage
+                </a>
+
                 <a href="{{ url_for('logout') }}" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i>
                     Déconnexion
@@ -30,33 +44,93 @@
         </nav>
     </header>
 
-    <div class="container mt-4">
-        <h2><i class="fas historique">Historique de l'utilisateur {{ username }}</i></h2>
-    
-        {% if logs %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Action</th>
-                    <th>Nom du fichier</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for log in logs %}
-                <tr>
-                    <td>{{ log['timestamp'] }}</td>
-                    <td>{{ log['action'] }}</td>
-                    <td>{{ log['original_filename'] or '—' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-            <p>Aucune action enregistrée pour l’instant.</p>
-        {% endif %}
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            <!-- History Section -->
+            <section class="history-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i> Historique des activités</h2>
+                    {% if history_entries %}
+                    <span class="history-count">{{ history_entries|length }} activité{{ 's' if history_entries|length > 1 else '' }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if history_entries %}
+                <div class="history-list">
+                    {% for entry in history_entries %}
+                    <div class="history-item">
+                        <div class="history-icon">
+                            {% if entry.action == 'upload' %}
+                                <i class="fas fa-upload" style="color: #10b981;"></i>
+                            {% elif entry.action == 'download' %}
+                                <i class="fas fa-download" style="color: #1a73e8;"></i>
+                            {% elif entry.action == 'delete' %}
+                                <i class="fas fa-trash" style="color: #ef4444;"></i>
+                            {% elif entry.action == 'restore' %}
+                                <i class="fas fa-undo" style="color: #f59e0b;"></i>
+                            {% elif entry.action == 'permanent_delete' %}
+                                <i class="fas fa-ban" style="color: #b91c1c;"></i>
+                            {% elif entry.action == 'share' %}
+                                <i class="fas fa-share-alt" style="color: #8b5cf6;"></i>
+                            {% else %}
+                                <i class="fas fa-circle" style="color: #6b7280;"></i>
+                            {% endif %}
+                        </div>
+                        <div class="history-content">
+                            <div class="history-action">
+                                {% if entry.action == 'upload' %}
+                                    Fichier téléversé
+                                {% elif entry.action == 'download' %}
+                                    Fichier téléchargé
+                                {% elif entry.action == 'delete' %}
+                                    Fichier supprimé
+                                {% elif entry.action == 'restore' %}
+                                    Fichier restauré
+                                {% elif entry.action == 'permanent_delete' %}
+                                    Fichier supprimé définitivement
+                                {% elif entry.action == 'share' %}
+                                    Lien de partage créé
+                                {% else %}
+                                    {{ entry.action }}
+                                {% endif %}
+                            </div>
+                            {% if entry.original_filename %}
+                            <div class="history-file">{{ entry.original_filename }}</div>
+                            {% endif %}
+                            <div class="history-time">{{ entry.timestamp|dt }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <h3>Aucune activité</h3>
+                    <p>Votre historique d'activités apparaîtra ici.</p>
+                    <a href="{{ url_for('dashboard') }}" class="btn-primary">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour au tableau de bord
+                    </a>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
 
-    <a href="{{ url_for('dashboard') }}">← Retour au tableau de bord</a>
+    <!-- Message Display -->
+    <div id="history-message" class="message-container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message message-info">
+                        <i class="fas fa-info-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
 </body>
 </html>
 

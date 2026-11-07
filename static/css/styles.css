@@ -1,4 +1,3 @@
-/* Reset et styles de base */
 * {
     margin: 0;
     padding: 0;
@@ -45,7 +44,6 @@ input:focus {
     outline: none;
 }
 
-/* Use styles.css button and color scheme for all buttons */
 .btn, button {
     padding: 0.8rem 1.5rem;
     border-radius: 5px;
@@ -872,4 +870,444 @@ thead {
     .file-input-label i {
         font-size: 2rem;
     }
-} 
+}
+
+/* File Sharing Styles */
+.btn-share {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0 0.25rem;
+}
+
+.btn-share:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
+}
+
+.btn-share:disabled {
+    background-color: #6b7280;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Shared File Page Styles */
+.shared-file-section {
+    margin-bottom: 2rem;
+}
+
+.shared-file-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.file-icon.large {
+    font-size: 4rem;
+    color: #1a73e8;
+    min-width: 80px;
+    text-align: center;
+}
+
+.file-details {
+    flex: 1;
+}
+
+.file-details .file-name {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.file-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.file-meta p {
+    color: #6b7280;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-download-large {
+    background-color: #1a73e8;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-download-large:hover {
+    background-color: #1557b0;
+    transform: translateY(-2px);
+}
+
+.share-info {
+    margin-top: 2rem;
+}
+
+.info-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.info-card h4 {
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.info-card li {
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.info-card li:before {
+    content: "•";
+    color: #1a73e8;
+    position: absolute;
+    left: 0;
+}
+
+/* Manage Shares Page Styles */
+.shares-section {
+    margin-bottom: 2rem;
+}
+
+.share-count {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.shares-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+}
+
+.share-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.share-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.share-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.share-info .file-name {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.share-date {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+.share-details {
+    margin-bottom: 1.5rem;
+}
+
+.share-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.share-meta p {
+    color: #6b7280;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.share-link {
+    margin-bottom: 1rem;
+}
+
+.share-link label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.link-container {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.share-url {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    background: #f9fafb;
+    color: #374151;
+}
+
+.btn-copy {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 40px;
+}
+
+.btn-copy:hover {
+    background: #4b5563;
+}
+
+.share-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-deactivate {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-deactivate:hover {
+    background: #dc2626;
+}
+
+.btn-shares {
+    background-color: #8b5cf6;
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-shares:hover {
+    background-color: #7c3aed;
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments for sharing */
+@media (max-width: 768px) {
+    .shared-file-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .file-icon.large {
+        font-size: 3rem;
+    }
+    
+    .shares-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .share-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .link-container {
+        flex-direction: column;
+    }
+    
+    .btn-copy {
+        align-self: flex-end;
+        width: fit-content;
+    }
+}
+
+/* History Page Styles */
+.history-section {
+    margin-bottom: 2rem;
+}
+
+.history-count {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.history-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s ease;
+}
+
+.history-item:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.history-icon {
+    font-size: 1.5rem;
+    min-width: 40px;
+    text-align: center;
+}
+
+.history-content {
+    flex: 1;
+}
+
+.history-action {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.history-file {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.history-time {
+    color: #9ca3af;
+    font-size: 0.8rem;
+}
+
+/* Responsive adjustments for history */
+@media (max-width: 768px) {
+    .history-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .history-icon {
+        font-size: 2rem;
+    }
+}
+
+.quota-container{
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.quota-bar-wrapper{
+    width: 100%;
+    background: #e5e7eb;
+    border-radius: 20px;
+    overflow: hidden;
+    height: 16px;
+    margin: 0.5rem 0;
+}
+
+.quota-bar{
+    height: 100%;
+    background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+    transition: width 0.4s ease;
+}
+
+/* ---- 2026 layout refresh: roomier file cards and consistent nav links ---- */
+.files-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.file-card {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    grid-template-areas: "icon info" "actions actions";
+    align-items: center;
+    gap: 0.75rem 1rem;
+}
+.file-card .file-icon { grid-area: icon; }
+.file-card .file-info { grid-area: info; min-width: 0; }
+.file-card .file-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-card .file-actions {
+    grid-area: actions;
+    justify-content: flex-end;
+    border-top: 1px solid #eef0f4;
+    padding-top: 0.75rem;
+}
+.nav-user a.btn-dashboard,
+.nav-user a.btn-history {
+    color: #fff;
+    text-decoration: none;
+    padding: 0.55rem 0.9rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.nav-user a.btn-dashboard:hover,
+.nav-user a.btn-history:hover { background: rgba(255, 255, 255, 0.15); }
